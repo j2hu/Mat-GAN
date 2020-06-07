@@ -148,10 +148,6 @@ def get_total_energy(folder):
 def get_binding_4O(E_t):
     E_binding= (E_t-6*E_Ca-4*E_Sn-10*E_S-4*E_O)/24
     return E_binding
-######################################################
-
-#####################################################
-#preprocessing
 
 def linear_transform(energy):
     global extend_num, move_num

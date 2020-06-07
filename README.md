@@ -3,3 +3,4 @@ Mat-GAN: Learning the First Principle Calculated Properties for Mixed-atoms Crys
 
 
 ![Mat-GAN](https://github.com/j2hu/Mat-GAN/blob/master/Mat-GAN-code-flow.jpg)
+![Mat-GAN](https://github.com/j2hu/Mat-GAN/blob/master/Mat-GAN-code-flow.png)

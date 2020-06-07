@@ -137,8 +137,13 @@ def random_folder(file_path):
     return folder
 ```
 
-extract_energy
+Method:extract_energy
 -----
+E_Sn=-3.980911
+E_S=-2.696603
+E_Ca=-1.250692
+E_O=-0.867783
+
 ```python
 def get_total_energy(folder):
     energy_string=os.popen('grep TOTEN '+folder+'/OUTCAR | tail -1').read().split(' ')[-2]
@@ -164,3 +169,178 @@ extend_num=1000
 move_num=get_total_energy(train_path+'1000')
 #print(move_num)
 ```
+
+Method:extract_PXRD and get L_matrix
+-----
+        test and define `if t1pxrd.y[i]>0.25 and t1pxrd.x[i]>20:`accroding to its crystal structure.
+```python
+patt_xrd = xrd.XRDCalculator('CuKa')
+
+t1path=train_path+'1000/CONTCAR'
+t1=mg.Structure.from_file(t1path)
+t1pxrd=patt_xrd.get_pattern(t1)
+global base_x,base_y
+base_x=[]
+base_y=[]
+for i in range(len(t1pxrd)):
+    if t1pxrd.y[i]>0.25 and t1pxrd.x[i]>20:
+        base_x.append(t1pxrd.x[i])
+        base_y.append(t1pxrd.y[i])
+
+base_x=base_x[:28]
+base_y=base_x[:28]
+
+# the step about Pymatgen POSCAR-> the format of pymatgen
+def tomgStructure(folder):
+    POSfile=folder+'/CONTCAR'      
+    R_mgS=mg.Structure.from_file(POSfile)
+    return R_mgS
+
+###
+##input_data_to_model
+###
+
+def get_xrdmat(mgStructure):
+    global rmat_num
+    xrd_data4 =patt_xrd.get_pattern(mgStructure)
+
+    i_column = 28
+    xxx=[]
+    yyy=[]
+    mat4=[]
+    xrd_i=len(xrd_data4)
+    for i in range(xrd_i):
+        if xrd_data4.y[i] >0.25  and xrd_data4.x[i]>20:
+            xxx.append(xrd_data4.x[i])
+            yyy.append(xrd_data4.y[i])
+    mat4.append(np.asarray(xxx))
+    mat4.append(np.asarray(yyy))
+    mat4=np.asarray(mat4)
+    
+    xrd_x=[]
+    xrd_y=[]
+    xrd_mat4=[]
+    xrow=len(mat4[0])
+    
+    if xrow < i_column:
+        for i in mat4[0]:
+            xrd_x.append(i)
+        for j in mat4[1]:
+            xrd_y.append(j)
+        for i in range(0,i_column-xrow):
+            xrd_x.append(0)
+            xrd_y.append(0)
+        xrd_x=np.asarray(xrd_x)
+        xrd_y=np.asarray(xrd_y)
+    if xrow > i_column:
+        xrd_x=mat4[0][:i_column]
+        xrd_y=mat4[1][:i_column]
+    if xrow == i_column:
+        xrd_x= mat4[0]
+        xrd_y= mat4[1]
+        
+    xrd_x=abs(xrd_x-base_x)
+    xrd_y=10*abs(xrd_y-base_y)
+    
+    xrd_x=np.sin(np.dot(1/180*np.pi,xrd_x))
+    xrd_y=(np.arctan(xrd_y))/180*np.pi
+    xrd_mat4.append(xrd_x)
+    xrd_mat4.append(xrd_y)
+    xrd_mat4=np.array(xrd_mat4)
+    return xrd_mat4
+
+##
+################################
+#def get_atoms_num(folder2):   #
+#    xxx=tomgStructure(folder2)#
+#    anum=len(xxx.sites)       # 
+#    return anum               #
+################################
+'''
+#pattern ---F
+#select one patter(AorF) for per training
+t1path=train_path+'2001/CONTCAR'
+t1=mg.Structure.from_file(t1path)
+t1pxrd=patt_xrd.get_pattern(t1)
+global base_x,base_y
+base_x=[]
+base_y=[]
+for i in range(len(t1pxrd)):
+    if t1pxrd.y[i]>2 and t1pxrd.y[i]< 20:
+        base_x.append(t1pxrd.x[i])
+        base_y.append(t1pxrd.y[i])
+
+base_x=base_x[:28]
+base_y=base_x[:28]
+
+
+
+
+def get_xrdmat(mgStructure):
+    global rmat_num
+    xrd_data4 =patt_xrd.get_pattern(mgStructure)
+
+    i_column = 28
+    xxx=[]
+    yyy=[]
+    mat4=[]
+    xrd_i=len(xrd_data4)
+    for i in range(xrd_i):
+        if xrd_data4.y[i] >2 and xrd_data4.y[i] <20:
+            xxx.append(xrd_data4.x[i])
+            yyy.append(xrd_data4.y[i])
+    mat4.append(np.asarray(xxx))
+    mat4.append(np.asarray(yyy))
+    mat4=np.asarray(mat4)
+    
+    xrd_x=[]
+    xrd_y=[]
+    xrd_mat4=[]
+    xrow=len(mat4[0])
+    
+    if xrow < i_column:
+        for i in mat4[0]:
+            xrd_x.append(i)
+        for j in mat4[1]:
+            xrd_y.append(j)
+        for i in range(0,i_column-xrow):
+            xrd_x.append(0)
+            xrd_y.append(0)
+        xrd_x=np.asarray(xrd_x)
+        xrd_y=np.asarray(xrd_y)
+    if xrow > i_column:
+        xrd_x=mat4[0][:i_column]
+        xrd_y=mat4[1][:i_column]
+    if xrow == i_column:
+        xrd_x= mat4[0]
+        xrd_y= mat4[1]
+        
+    #xrd_x=abs(xrd_x-base_x)
+    xrd_y=abs(xrd_y-base_y)/100
+    
+    xrd_x=10*np.sin(np.dot(1/180*np.pi,xrd_x))
+    xrd_y=np.exp(np.sqrt(xrd_y))
+    xrd_mat4.append(xrd_x)
+    xrd_mat4.append(xrd_y)
+    xrd_mat4=np.array(xrd_mat4)
+    return xrd_mat4
+'''
+
+
+
+
+
+###
+##input_data_for_G
+###
+def GANs_Gmat(Random_Structure):
+    global rmat_num
+    RS_xrdmat = get_xrdmat(Random_Structure)
+    multimat3_RS =  np.zeros((rmat_num,rmat_num),dtype='float32')
+    multimat3_RS = np.asarray((np.dot(RS_xrdmat.T, RS_xrdmat)))
+    return multimat3_RS
+```
+
+
+
+

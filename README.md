@@ -19,6 +19,7 @@ Ca6Sn4S14-xOx:github.com/j2hu/MATGANICSS
 #initialization
 
 class DNet(nn.Module):
+
     def __init__(self):
         super(DNet, self).__init__()
         self.Dlstm=nn.LSTM(
@@ -33,10 +34,7 @@ class DNet(nn.Module):
             nn.Linear(10,1),
             nn.Sigmoid(),
         )
-        #nn.Linear(32,1)
-        #nn.Relu
-        #nn.Linear
-        #nn.Sigmoid
+
         
     def forward(self,x):
         D_out,(h_n,h_c)=self.Dlstm(x,None)

@@ -110,13 +110,13 @@ opt_G1=torch.optim.Adam(G1.parameters(),lr=0.01)
 
 test_dir and train_dir
 -----------------------
-        replace '****' with your path
+       
 ```python
-
+# replace '****' with your path
 person_path='*******/GAN'
 
 train_path=person_path+'/train/'
 
 test_path=person_path+'/test/'
-```python
+```
 

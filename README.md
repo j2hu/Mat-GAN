@@ -172,7 +172,7 @@ move_num=get_total_energy(train_path+'1000')
 
 Method:extract_PXRD and get L_matrix
 -----
-        test and define `if t1pxrd.y[i]>0.25 and t1pxrd.x[i]>20:`accroding to its crystal structure.
+        test and define "if t1pxrd.y[i]>`0.25` and t1pxrd.x[i]>`20` " accroding to its crystal structure.
 ```python
 patt_xrd = xrd.XRDCalculator('CuKa')
 

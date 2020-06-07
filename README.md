@@ -465,7 +465,7 @@ def get_binding_4O(E_t):
 ```
 
 
-```pyhon
+```python
 E_Gibbs_test=[]
 E_Gmodel_test=[]
 abserrset=[]

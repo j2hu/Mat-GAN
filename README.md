@@ -139,12 +139,11 @@ def random_folder(file_path):
 
 Method:extract_energy
 -----
+```python
 E_Sn=-3.980911
 E_S=-2.696603
 E_Ca=-1.250692
 E_O=-0.867783
-
-```python
 def get_total_energy(folder):
     energy_string=os.popen('grep TOTEN '+folder+'/OUTCAR | tail -1').read().split(' ')[-2]
     energy_slab=round(np.float64(float(energy_string)),5)
@@ -172,7 +171,8 @@ move_num=get_total_energy(train_path+'1000')
 
 Method:extract_PXRD and get L_matrix
 -----
-        test and define "if t1pxrd.y[i]>`0.25` and t1pxrd.x[i]>`20` " accroding to its crystal structure.
+test and define `if t1pxrd.y[i]>0.25and t1pxrd.x[i]>20` accroding to its crystal structure.
+
 ```python
 patt_xrd = xrd.XRDCalculator('CuKa')
 

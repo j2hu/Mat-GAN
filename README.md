@@ -337,10 +337,257 @@ def GANs_Gmat(Random_Structure):
     global rmat_num
     RS_xrdmat = get_xrdmat(Random_Structure)
     multimat3_RS =  np.zeros((rmat_num,rmat_num),dtype='float32')
-    multimat3_RS = np.asarray((np.dot(RS_xrdmat.T, RS_xrdmat)))
-    return multimat3_RS
+    L_matrix = np.asarray((np.dot(RS_xrdmat.T, RS_xrdmat)))
+    return L_matrix
+```
+
+per step of trianing
+------
+```python
+file_path=train_path
+#tfset=[]  
+for step in range(1,3):       
+
+
+    sample_path=[]
+    for i in range(1,sample_num+1):
+        path_ = random_folder(file_path)
+        sample_path.append(path_)
+
+    X_DFT=0
+
+    for subpath_ in sample_path:
+    
+        try:
+            total_energy=get_total_energy(path_)
+            X_DFT=linear_transform(total_energy)
+        except:
+            print(path1_)
+         
+        train_series.pop(-1)
+        train_series.append(X_DFT)
+    #update queue with X from D  
+    input_series_D=np.asarray(train_series,dtype=np.float64)       
+    input_series_D=Variable(torch.from_numpy(input_series_D[np.newaxis,np.newaxis,:]),requires_grad=True)
+    
+    Dout_real=D1(input_series_D)
+    pre_dd.append(Dout_real.data.numpy().mean())
+    
+    G_input=[]
+    for path2_ in sample_path:
+        path2_=str(path2_)                
+        
+        try:
+            file2pmg=tomgStructure(path2_)
+            L_matrix=GANs_Gmat(file2pmg)
+            
+        except:
+            pass
+        G_input.append(L_matrix)
+       
+    G_input=np.asarray(G_input)
+    G_input=G_input[np.newaxis,:,:,:] 
+    G_input=np.asarray(G_input,dtype=np.float64) 
+    G_input=Variable(torch.from_numpy(G_input),requires_grad=True)
+    
+    Gout=G1(G_input)
+    Gout=round(Gout.data.numpy().mean(),6)   # properties by G
+
+    #update queue with X from G
+    train_series.append(Gout)
+    train_series.pop(0)
+        
+    input_series_D=np.asarray(train_series,dtype=np.float64)       
+    input_series_D=Variable(torch.from_numpy(input_series_D[np.newaxis,np.newaxis,:]),requires_grad=True)
+    
+    
+    D_out_fake=D1(input_series_D)
+    pre_gg.append(D_out_fake.data.numpy().mean())
+    
+    #loss
+    D1_loss=-torch.mean(torch.log(D_out_real)+torch.log(1.-D_out_fake))
+    dd=D1_loss.data.numpy().mean()
+    mat_Dl.append(dd)
+    
+    G1_loss=torch.mean(torch.log(1.-D_out_fake))
+    gg=G1_loss.data.numpy().mean()
+    mat_Gl.append(gg)
+    
+    #------update Mat-GAN with loss 
+    if step%2==0:
+        opt_D1.zero_grad()
+        D1_loss.backward(retain_graph=True)
+        opt_D1.step()
+        
+        opt_G1.zero_grad()
+        G1_loss.backward()
+        opt_G1.step()
+    else:
+        opt_D1.zero_grad()
+        D1_loss.backward()
+        opt_D1.step()
+    
+
+    if step%2==0:
+        print(step)
+        print('error: ',abs(inverse_transform(Gout)-inverse_transform(X_DFT)))
+        
+        print(dd)
+        print(gg)
+        print(prob_Tfactor_mat0.data.numpy().mean())
+        print(prob_G1_mat1.data.numpy().mean())
+```
+
+Save_dict G and D
+----
+```python
+torch.save(G1.state_dict(),person_path+"/GAN_G_step.pkl") 
+torch.save(D1.state_dict(),person_path+"/GAN_D_step.pkl")
+```
+
+load dict G and D
+----
+```python
+
+G1.load_stat_dict(torch.load(person_path+'/GAN_G_step.pkl'))
+D1.load_stat_dict(torch.load(person_path+'/GAN_D_step.pkl'))
+
+```
+statistics the performance of Mat-GAN in the training set and test set.  
+------------
+
+As a example of the binding energy of CSS4O
+
+```python
+def get_binding_4O(E_t):
+    E_binding= (E_t-6*E_Ca-4*E_Sn-10*E_S-4*E_O)/24
+    return E_binding
 ```
 
 
+```pyhon
+E_Gibbs_test=[]
+E_Gmodel_test=[]
+abserrset=[]
+MSEset=[]
+err0set=[]
+testfile2=[]
+for m1,n1,fname in os.walk(test_path):
+    for ieach in n1:
+        ieach=test_path+ieach
+        testfile2.append(ieach)
+start=time.time()        
+for path_ in testfile2:
+    try:
+        GGG=get_total_energy(path_)
+        GGG=get_binding_4O(GGG)
+        E_Gibbs_test.append(GGG)
+        
+        g_in=[]
+        tomgS=tomgStructure(path_)
+        gin=GANs_Gmat(tomgS)
+        g_in.append(gin)
+        g_in=np.asarray(g_in)
+        g_in=g_in[np.newaxis,:,:,:]
+        g_in=np.asarray(g_in,dtype=np.float64)
+        g_in=Variable(torch.from_numpy(g_in),requires_grad=True)
+        Gout=G1(g_in)
+        G_data=Gout.data.numpy().mean()
+        G_data=inverse_transform(G_data)
+        G_data=get_binding_4O(G_data)
+        E_Gmodel_test.append(G_data)
+        #print(G_data)
+        #print(GGG)
+        abserr=abs(G_data-GGG)
+        mse=(G_data-GGG)**2
+        abserrset.append(abserr)
+        MSEset.append(mse)
+        err0=abs(abserr/GGG)
+        err0set.append(err0)
+    except:
+        print(path_)
+end=time.time()
+print(end-start)
 
 
+# In[31]:
+
+
+print(np.asarray(abserrset).mean())
+
+print(np.asarray(MSEset).mean())
+
+
+
+
+# In[ ]:
+
+
+print(abserrset)
+
+
+# In[26]:
+
+
+E_Gibbs_t=[]
+E_Gmodel_t=[]
+abs_t_errset=[]
+err_t_0set=[]
+tMSEset=[]
+testfile=[]
+for m1,n1,fname in os.walk(train_path):
+    for ieach in n1:
+        ieach=train_path+ieach
+        testfile.append(ieach)
+
+
+# In[25]:
+
+
+
+
+
+# In[35]:
+
+
+start=time.time()
+#        
+for path_ in testfile:
+    try:
+        GGG=get_total_energy(path_)
+        GGG=get_binding_4O(GGG)
+
+        E_Gibbs_t.append(GGG)
+        g_in=[]
+        tomgS=tomgStructure(path_)
+        gin=GANs_Gmat(tomgS)
+        g_in.append(gin)
+        g_in=np.asarray(g_in)
+        g_in=g_in[np.newaxis,:,:,:]
+        g_in=np.asarray(g_in,dtype=np.float64)
+        g_in=Variable(torch.from_numpy(g_in),requires_grad=True)
+        Gout=G1(g_in)
+        G_data=Gout.data.numpy().mean()
+        G_data=inverse_transform(G_data)
+        G_data=get_binding_4O(G_data)
+        E_Gmodel_t.append(G_data)
+        #print(G_data)
+        #print(GGG)
+        abserr=abs(G_data-GGG)
+        tmse=(G_data-GGG)**2
+        tMSEset.append(tmse)
+        abs_t_errset.append(abserr)
+        err0=abs(abserr/GGG)
+        err_t_0set.append(err0)
+    except:
+        print(path_)
+end=time.time()
+print(end-start)
+
+
+
+print(np.asarray(abs_t_errset).mean())
+
+print(np.asarray(tMSEset).mean())
+
+```

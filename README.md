@@ -16,7 +16,7 @@ CsPb(Br/I)3 in the slab model:
 
 Si-Fe-Mn alloy:
 
-Ca6Sn4S14-xOx:(github.com/j2hu/MATGANICSS)
+Ca6Sn4S14-xOx:[MATGANICSS](github.com/j2hu/MATGANICSS)
 
 ![Mat-GAN](https://github.com/j2hu/Mat-GAN/blob/master/Mat-GAN-code-flow.png)
 

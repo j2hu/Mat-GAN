@@ -1,5 +1,5 @@
 # Mat-GAN
-Mat-GAN: Learning the First Principle Calculated Properties for Mixed-atoms Crystals.
+#Mat-GAN: Learning the First Principle Calculated Properties for Mixed-atoms Crystals.
 
 Dataset:
 
@@ -82,14 +82,21 @@ class GNet(nn.Module):
         
 
 train_series=[]
+
 for i in range(series_num):
+
     path_s=random_xxpsk(train_path)
+    
     ee1=get_total_energy(path_s)
+    
     ee1=linear_transform(ee1)
+    
     train_series.append(ee1)
     
 G1=GNet()
+
 D1=DNet()
 
 opt_D1=torch.optim.Adam(D1.parameters(),lr=0.01)
+
 opt_G1=torch.optim.Adam(G1.parameters(),lr=0.01)

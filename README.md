@@ -5,6 +5,8 @@ Learning the First Principle Calculated Properties for Mixed-atoms Crystals.
 
 
 Dataset:
+----------
+
 
 CsPb(Br/I)3 in 3*2*1 supercell:
 
@@ -20,8 +22,8 @@ Ca6Sn4S14-xOx:github.com/j2hu/MATGANICSS
 
 
 #initialization
-############################################################################################
-
+----------------------
+```python
 class DNet(nn.Module):
 
     def __init__(self):
@@ -104,7 +106,7 @@ D1=DNet()
 opt_D1=torch.optim.Adam(D1.parameters(),lr=0.01)
 
 opt_G1=torch.optim.Adam(G1.parameters(),lr=0.01)
+```
 
-################################################################################
-################################################################################
+
 

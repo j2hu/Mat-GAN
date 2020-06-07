@@ -14,4 +14,5 @@ Si-Fe-Mn alloy:
 Ca6Sn4S14-xOx:github.com/j2hu/MATGANICSS
 
 ![Mat-GAN](https://github.com/j2hu/Mat-GAN/blob/master/Mat-GAN-code-flow.png)
-<img src="https://github.com/j2hu/Mat-GAN/blob/master/Mat-GAN-code-flow.png" width="375">
+
+

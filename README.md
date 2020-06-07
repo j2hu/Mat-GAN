@@ -24,6 +24,12 @@ Ca6Sn4S14-xOx:github.com/j2hu/MATGANICSS
 #initialization
 ----------------------
 ```python
+global sample_num, rmat_num, series_num
+sample_num=1 #output of G
+rmat_num=28  #row nums of the matrix for the input of CNN 
+series_num=3 #the number of the element in the queue (D)
+
+
 class DNet(nn.Module):
 
     def __init__(self):

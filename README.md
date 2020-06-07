@@ -718,27 +718,6 @@ torch.save(G1.state_dict(),person_path+"/GCN.pkl")
 MAE/MSE
 ----
 ```python
-# In[ ]:
-
-
-print(trainfile[6])
-
-
-# In[15]:
-
-
-torch.save(G1.state_dict(),"/home/hjj/Desktop/G1_GCN-CSS5O_10to80.pkl") 
-
-
-# In[ ]:
-
-
-
-
-
-
-# In[16]:
-
 
 Eb_Gibbs_test=[]
 Eb_Gmodel_test=[]
@@ -747,24 +726,16 @@ MSEsetb=[]
 err0setb=[]
 testfile=[]
 
-
-
-
-
 for m1,n1,fname in os.walk(test_path):
     for ieach in n1:
         ieach=test_path+ieach
         testfile.append(ieach)
 
-
-
-
 start=time.time()        
 for path_ in testfile:
     try:
         GGG=get_total_energy(path_)
-        GGG=get_binding_4O(GGG)
-        
+        GGG=get_binding_4O(GGG)       
 
         Eb_Gibbs_test.append(GGG)
         
@@ -794,18 +765,10 @@ for path_ in testfile:
 end=time.time()
 print(end-start)
 
-
-# In[19]:
-
-
 print(np.asarray(abserrsetb).mean())
 
 print(np.asarray(MSEsetb).mean())
-
-
-# In[20]:
-
-
+###############################
 X_DFT_testb=[]
 E_Gmodel_testb=[]
 abs_t_errsetb=[]
@@ -849,8 +812,6 @@ for path_ in testfileb:
         print(path_)
 end=time.time()
 print(end-start)
-
-
 
 print(np.asarray(abs_t_errsetb).mean())
 

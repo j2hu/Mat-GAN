@@ -706,6 +706,17 @@ for path_ in trainfile:
     loss_set.append(G1_loss)
     print(i,": ",G1_loss)
 ```
+test_dir and train_dir
+-----------------------
+       
+```python
+# replace '****' with your path
+person_path='*******/GAN'
+
+train_path=person_path+'/train/'
+
+test_path=person_path+'/test/'
+```
 
 
 

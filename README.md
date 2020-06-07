@@ -28,7 +28,8 @@ global sample_num, rmat_num, series_num
 sample_num=1 #output of G
 rmat_num=28  #row nums of the matrix for the input of CNN 
 series_num=3 #the number of the element in the queue (D)
-
+torch.set_default_dtype(torch.float64)
+torch.set_printoptions(precision=8)
 
 class DNet(nn.Module):
 
@@ -126,3 +127,44 @@ train_path=person_path+'/train/'
 test_path=person_path+'/test/'
 ```
 
+Random_folder
+-------
+```python
+def random_folder(file_path):
+    folder=np.random.choice(glob.glob(file_path +"*"))
+    #pos_name=folder+'/POSCAR'
+    #out_name=folder+'/OUTCAR'
+    return folder
+```
+
+extract_energy
+-----
+```python
+def get_total_energy(folder):
+    energy_string=os.popen('grep TOTEN '+folder+'/OUTCAR | tail -1').read().split(' ')[-2]
+    energy_slab=round(np.float64(float(energy_string)),5)
+    return energy_slab
+
+def get_binding_4O(E_t):
+    E_binding= (E_t-6*E_Ca-4*E_Sn-10*E_S-4*E_O)/24
+    return E_binding
+######################################################
+
+#####################################################
+#preprocessing
+
+def linear_transform(energy):
+    global extend_num, move_num
+    energy_transform=(energy-move_num)*extend_num
+    return energy_transform
+def inverse_transform(energy_transform):
+    global extend_num, move_num
+    energy=energy_transform/extend_num+move_num
+    return energy
+
+
+global extend_num, move_num
+extend_num=1000
+move_num=get_total_energy(train_path+'1000')
+#print(move_num)
+```

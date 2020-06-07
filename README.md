@@ -591,3 +591,273 @@ print(np.asarray(abs_t_errset).mean())
 print(np.asarray(tMSEset).mean())
 
 ```
+
+GCN
+====================================
+initialization GCN
+------------
+```python
+define the GCN 
+class GCNNet(nn.Module):
+    def __init__(self, input_size=(sample_num,28,28)):
+        super(GCNNet, self).__init__()
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(#(3,28,28)
+                in_channels=sample_num,
+                out_channels=32,
+                kernel_size=5,
+                stride=1,
+                padding=2,
+            ),#->(32,28,28)
+            nn.ReLU(),#->(32,28,28)
+            nn.MaxPool2d(kernel_size=2),
+        )#->(#->(32,14,14))
+        self.conv2=nn.Sequential(#->(32,14,14))
+            nn.Conv2d(
+                in_channels=32,
+                out_channels=64,
+                kernel_size=5,
+                stride=1,
+                padding=2,
+            ),#->(64,14,14)
+            nn.ReLU(),#->(64,14,14)
+            nn.MaxPool2d(kernel_size=2),#->(64,7,7)
+        )
+        self.out=nn.Sequential(
+            nn.Linear(64*7*7,128),
+            nn.ReLU(),
+            nn.Linear(128,sample_num),            
+        )
+        
+    def forward(self,x):
+        x=self.conv1(x)
+        x=self.conv2(x) #batch(64,7,7)
+        x=x.view(x.size(0),-1) #(batch, 64*7*7)
+        output=torch.unsqueeze(self.out(x),dim=0)
+        return output
+
+
+#####################################################################
+#the above parts are the module uesd to the process of initializaiton
+#
+#####################################################################
+
+###############################################################
+#the initialzaiont of G
+
+
+G1= GCNNet()
+opt_G1=torch.optim.Adam(G1.parameters(),lr=0.01)
+```
+
+Training GCN
+----------------
+
+```python
+trainfile=[]
+for m1,n1,fname in os.walk(train_path):
+    for ieach in n1:
+        ieach=train_path+ieach
+        trainfile.append(ieach)
+i=0
+
+loss_set=[]
+for path_ in trainfile:
+    X_DFT=[]
+    try:
+        total_energy=get_total_energy(path_)
+        E_DFT=linear_transform(total_energy)
+            #print(samp_Gibbs)
+    except:
+        print(path_)
+            
+    X_DFT.append(E_DFT)
+        
+    X_DFT=np.asarray(X_DFT,dtype=np.float64)       
+    X_DFT=Variable(torch.from_numpy(X_DFT[np.newaxis,np.newaxis,:]),requires_grad=True)
+    
+    G_input=[]
+           
+     
+    try:
+        tomgS=tomgStructure(path_)
+            #print(tomgS)
+        L_matrix=GANs_Gmat(tomgS)
+            #print(L_matrix)
+    except:
+        pass
+    G_input.append(L_matrix)
+       
+    G_input=np.asarray(G_input)
+    G_input=G_input[np.newaxis,:,:,:] 
+    G_input=np.asarray(G_input,dtype=np.float64) 
+    G_input=Variable(torch.from_numpy(G_input),requires_grad=True)
+    
+    Gout=G1(G_input)    
+    
+    G1_loss=torch.abs(torch.mean(Gout-float(E_DFT)))
+    
+
+    opt_G1.zero_grad()
+    G1_loss.backward()
+    opt_G1.step()
+    
+    i += 1
+    loss_set.append(G1_loss)
+    print(i,": ",G1_loss)
+```
+
+
+
+save dict GCN
+-----
+```python
+torch.save(G1.state_dict(),person_path+"/GCN.pkl") 
+```
+
+MAE/MSE
+----
+```python
+# In[ ]:
+
+
+print(trainfile[6])
+
+
+# In[15]:
+
+
+torch.save(G1.state_dict(),"/home/hjj/Desktop/G1_GCN-CSS5O_10to80.pkl") 
+
+
+# In[ ]:
+
+
+
+
+
+
+# In[16]:
+
+
+Eb_Gibbs_test=[]
+Eb_Gmodel_test=[]
+abserrsetb=[]
+MSEsetb=[]
+err0setb=[]
+testfile=[]
+
+
+
+
+
+for m1,n1,fname in os.walk(test_path):
+    for ieach in n1:
+        ieach=test_path+ieach
+        testfile.append(ieach)
+
+
+
+
+start=time.time()        
+for path_ in testfile:
+    try:
+        GGG=get_total_energy(path_)
+        GGG=get_binding_4O(GGG)
+        
+
+        Eb_Gibbs_test.append(GGG)
+        
+        G_input=[]
+        tomgS=tomgStructure(path_)
+        L_matrix=GANs_Gmat(tomgS)
+        G_input.append(L_matrix)
+        G_input=np.asarray(G_input)
+        G_input=G_input[np.newaxis,:,:,:]
+        G_input=np.asarray(G_input,dtype=np.float64)
+        G_input=Variable(torch.from_numpy(G_input),requires_grad=True)
+        Gout=G1(G_input)
+        G_data=Gout.data.numpy().mean()
+        G_data=inverse_transform(G_data)
+        G_data=get_binding_4O(G_data)
+
+        Eb_Gmodel_test.append(G_data)
+
+        abserr=abs(G_data-GGG)
+        mse=(G_data-GGG)**2
+        abserrsetb.append(abserr)
+        MSEsetb.append(mse)
+        err0=abs(abserr/GGG)
+        err0setb.append(err0)
+    except:
+        print(path_)
+end=time.time()
+print(end-start)
+
+
+# In[19]:
+
+
+print(np.asarray(abserrsetb).mean())
+
+print(np.asarray(MSEsetb).mean())
+
+
+# In[20]:
+
+
+X_DFT_testb=[]
+E_Gmodel_testb=[]
+abs_t_errsetb=[]
+err_t_0setb=[]
+tMSEsetb=[]
+testfileb=[]
+for m1,n1,fname in os.walk(train_path):
+    for ieach in n1:
+        ieach=train_path+ieach
+        testfileb.append(ieach)
+
+start=time.time()        
+for path_ in testfileb:
+    try:
+        GGG=get_total_energy(path_)
+        GGG=get_binding_4O(GGG)
+        X_DFT_testb.append(GGG)
+        
+        G_input=[]
+        tomgS=tomgStructure(path_)
+        L_matrix=GANs_Gmat(tomgS)
+        G_input.append(L_matrix)
+        G_input=np.asarray(G_input)
+        G_input=G_input[np.newaxis,:,:,:]
+        G_input=np.asarray(G_input,dtype=np.float64)
+        G_input=Variable(torch.from_numpy(G_input),requires_grad=True)
+        Gout=G1(G_input)
+        G_data=Gout.data.numpy().mean()
+        G_data=inverse_transform(G_data)
+        G_data=get_binding_4O(G_data)
+        E_Gmodel_testb.append(G_data)
+        #print(G_data)
+        #print(GGG)
+        abserr=abs(G_data-GGG)
+        mse=(G_data-GGG)**2
+        abs_t_errsetb.append(abserr)
+        tMSEsetb.append(mse)
+        err0=abs(abserr/GGG)
+        err_t_0setb.append(err0)
+    except:
+        print(path_)
+end=time.time()
+print(end-start)
+
+
+
+print(np.asarray(abs_t_errsetb).mean())
+
+print(np.asarray(tMSEsetb).mean())
+```
+
+
+
+
+

@@ -8,13 +8,13 @@ Dataset:
 ----------
 
 
-CsPb(Br/I)3 in 3*2*1 supercell:
+CsPb(Br/I)3 in 3*2*1 supercell: [MATGANICPX321](https://github.com/j2hu/MATGANICPX321)
 
-CsPb(Br/I)3 in 2*2*2 supercell:
+CsPb(Br/I)3 in 2*2*2 supercell: [MATGANICPX222](https://github.com/j2hu/MATGANICPX222)
 
-CsPb(Br/I)3 in the slab model:
+CsPb(Br/I)3 in the slab model: [MATGANICPXslab](https://github.com/j2hu/MATGANICPXslab)
 
-Si-Fe-Mn alloy:
+Si-Fe-Mn alloy: [MATGANISFM](https://github.com/j2hu/MATGANISFM)
 
 Ca6Sn4S14-xOx:[MATGANICSS](http://www.github.com/j2hu/MATGANICSS)
 
